@@ -245,7 +245,8 @@ class ARTM(object):
             raise IOError('dictionary_name is None')
 
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=20,
-                    num_document_passes=1, reuse_theta=True):
+                    num_document_passes=1, reuse_theta=True,
+                    use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_window=None, ptdw_reg_tau=None):
         """ARTM.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
@@ -301,7 +302,11 @@ class ARTM(object):
                                         class_ids=class_ids,
                                         class_weights=class_weights,
                                         reset_scores=True,
-                                        reuse_theta=reuse_theta)
+                                        reuse_theta=reuse_theta,
+                                        use_ptdw_matrix=use_ptdw_matrix,
+                                        ptdw_reg_mode=ptdw_reg_mode,
+                                        ptdw_reg_window=ptdw_reg_window,
+                                        ptdw_reg_tau=ptdw_reg_tau)
             self._synchronizations_processed += 1
             self.master.regularize_model(pwt=self.model_pwt,
                                          nwt=self.model_nwt,

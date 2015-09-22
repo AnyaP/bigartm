@@ -111,7 +111,8 @@ class MasterComponent(object):
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None,
-                        find_theta=False, reset_scores=False, reuse_theta=False):
+                        find_theta=False, reset_scores=False, reuse_theta=False,
+                        use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_window=None, ptdw_reg_tau=None):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
            - nwt(str): name of nwt matrix in BigARTM
@@ -146,6 +147,13 @@ class MasterComponent(object):
 
         args.reset_scores = reset_scores
         args.reuse_theta = reuse_theta
+
+        args.use_ptdw_matrix = use_ptdw_matrix
+        args.ptdw_reg_mode = ptdw_reg_mode
+        if ptdw_reg_window is not None:
+            args.ptdw_reg_window = ptdw_reg_window
+        if ptdw_reg_tau is not None:
+            args.ptdw_reg_tau = ptdw_reg_tau
 
         if regularizer_name is not None and regularizer_tau is not None:
             for name, tau in zip(regularizer_name, regularizer_tau):

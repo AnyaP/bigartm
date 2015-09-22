@@ -527,10 +527,43 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
       }
 
       // ToDo: Apply ptdw regularizer here (if needed)
-      // For now ust put the code here.
-      // Later we may do via regularizer's framework like this:
       // ptdw_agents->Apply(d, inner_iter, topics_count, local_ptdw)
 
+      // Smoothing by window (mode = 1)
+      if (model_config.ptdw_reg_mode() == 1) {
+        int h = model_config.ptdw_reg_window() / 2;
+        double tau = model_config.ptdw_reg_tau();
+        DenseMatrix<float> copy_ptdw(local_ptdw);
+        DenseMatrix<float> smoothed(1, topics_count);
+        smoothed.InitializeZeros();
+        float* smoothed_ptr = &smoothed(0, 0);
+
+        for (int i = 0; i < h && i < local_token_size; ++i) {
+          const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
+          for (int k = 0; k < topics_count; ++k) {
+            smoothed_ptr[k] += copy_ptdw_ptr[k];
+          }
+        }
+        for (int i = 0; i < local_token_size; ++i) {
+          const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
+          float* local_ptdw_ptr = &local_ptdw(i, 0);
+          for (int k = 0; k < topics_count; ++k) {
+            local_ptdw_ptr[k] += tau * smoothed_ptr[k];
+            if (i + h < local_token_size)
+              smoothed_ptr[k] += copy_ptdw(i + h, k);
+            if (i - h >= 0)
+              smoothed_ptr[k] -= copy_ptdw(i - h, k);
+          }
+        }
+      }
+
+      // Multiplying neighbours (mode = 2)
+      if (model_config.ptdw_reg_mode() == 2) {
+
+      }
+
+      // I would update each iteration, also the last one, why loose information?
+      // Onine LDA makes the same + we will have fully correct offline PLSA then.
       if (!last_iteration) {  // update theta matrix (except for the last iteration)
         for (int k = 0; k < topics_count; ++k)
           ntd_ptr[k] = 0.0f;
@@ -538,7 +571,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
           const float n_dw = sparse_ndw.val()[i];
           const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
           for (int k = 0; k < topics_count; ++k)
-            ntd_ptr[k] += n_dw * ptdw_ptr[k];
+            ntd_ptr[k] += n_dw * ptdw_ptr[k]; // n_td are not needed any more?
         }
 
         for (int k = 0; k < topics_count; ++k)
@@ -550,11 +583,11 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
         if (nwt_writer != nullptr && in_mask) {
           std::vector<float> values(topics_count, 0.0f);
           for (int i = begin_index; i < end_index; ++i) {
-            const float n_dw = batch_weight * sparse_ndw.val()[i];
+            const float n_dw = batch_weight * sparse_ndw.val()[i]; // what is batch_weight?
             const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
 
             for (int k = 0; k < topics_count; ++k)
-              values[k] = ptdw_ptr[k] * n_dw;
+              values[k] = ptdw_ptr[k] * n_dw;  // should we merge it with theta update?
 
             int w = sparse_ndw.col_ind()[i];
             nwt_writer->Store(w, token_id[w], values);
