@@ -281,6 +281,7 @@ void MasterComponent::RequestProcessBatches(const ProcessBatchesArgs& process_ba
   if (args.has_ptdw_reg_mode()) model_config.set_ptdw_reg_mode(args.ptdw_reg_mode());
   if (args.has_ptdw_reg_window()) model_config.set_ptdw_reg_window(args.ptdw_reg_window());
   if (args.has_ptdw_reg_tau()) model_config.set_ptdw_reg_tau(args.ptdw_reg_tau());
+  if (args.has_ptdw_reg_treshold()) model_config.set_ptdw_reg_treshold(args.ptdw_reg_treshold());
 
   std::shared_ptr<const TopicModel> topic_model = instance_->merger()->GetLatestTopicModel(model_name);
   std::shared_ptr<const PhiMatrix> phi_matrix = instance_->merger()->GetPhiMatrix(model_name);

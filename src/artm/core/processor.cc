@@ -531,27 +531,49 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
       // Smoothing by window (mode = 1)
       if (model_config.ptdw_reg_mode() == 1) {
+
+        // 1. evaluate wich tokens are background
+        double treshold = model_config.ptdw_reg_treshold();
+        std::vector<bool> is_background(local_token_size);
+        for (int i = 0; i < local_token_size; ++i) {
+          const float* local_ptdw_ptr = &local_ptdw(i, 0);
+          double sum_background = 0;
+          for (int k = 0; k < topics_count; ++k) {
+            char b = 'b';
+            if (p_wt.topic_name(k)[0] == b) { // background topic
+              sum_background += local_ptdw_ptr[k];
+            }
+          }
+          if (sum_background > treshold) {
+            is_background[i] = true;
+          }
+        }
+
+        // 2. prepare ptdw copy and smoothing profile
         int h = model_config.ptdw_reg_window() / 2;
         double tau = model_config.ptdw_reg_tau();
         DenseMatrix<float> copy_ptdw(local_ptdw);
         DenseMatrix<float> smoothed(1, topics_count);
         smoothed.InitializeZeros();
         float* smoothed_ptr = &smoothed(0, 0);
-
         for (int i = 0; i < h && i < local_token_size; ++i) {
+          if (is_background[i]) continue;
           const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
           for (int k = 0; k < topics_count; ++k) {
             smoothed_ptr[k] += copy_ptdw_ptr[k];
           }
         }
+
+        // 3. regularize
         for (int i = 0; i < local_token_size; ++i) {
+          if (is_background[i]) continue;
           const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
           float* local_ptdw_ptr = &local_ptdw(i, 0);
           for (int k = 0; k < topics_count; ++k) {
             local_ptdw_ptr[k] += tau * smoothed_ptr[k];
-            if (i + h < local_token_size)
+            if (i + h < local_token_size && !is_background[i + h])
               smoothed_ptr[k] += copy_ptdw(i + h, k);
-            if (i - h >= 0)
+            if (i - h >= 0 && !is_background[i - h])
               smoothed_ptr[k] -= copy_ptdw(i - h, k);
           }
         }

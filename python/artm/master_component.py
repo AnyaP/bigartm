@@ -112,7 +112,8 @@ class MasterComponent(object):
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None,
                         find_theta=False, reset_scores=False, reuse_theta=False,
-                        use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_window=None, ptdw_reg_tau=None):
+                        use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_window=None,
+                        ptdw_reg_tau=None, ptdw_reg_treshold=None):
         """Args:
            - pwt(str): name of pwt matrix in BigARTM
            - nwt(str): name of nwt matrix in BigARTM
@@ -154,6 +155,8 @@ class MasterComponent(object):
             args.ptdw_reg_window = ptdw_reg_window
         if ptdw_reg_tau is not None:
             args.ptdw_reg_tau = ptdw_reg_tau
+        if ptdw_reg_treshold is not None:
+            args.ptdw_reg_treshold = ptdw_reg_treshold
 
         if regularizer_name is not None and regularizer_tau is not None:
             for name, tau in zip(regularizer_name, regularizer_tau):

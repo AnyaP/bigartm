@@ -120,6 +120,7 @@ message ModelConfig {
   optional int32 ptdw_reg_mode = 20 [default=0];
   optional int32 ptdw_reg_window = 21 [default=10];
   optional double ptdw_reg_tau = 22 [default=0.01];
+  optional double ptdw_reg_treshold = 23 [default=1.0];
 }
 
 // Represents a configuration of a general regularizer
@@ -607,6 +608,7 @@ message ProcessBatchesArgs {
   optional int32 ptdw_reg_mode = 17 [default=0];
   optional int32 ptdw_reg_window = 18 [default=10];
   optional double ptdw_reg_tau = 19 [default=0.01];
+  optional double ptdw_reg_treshold = 20 [default=1.0];
 }
 
 message ProcessBatchesResult {

@@ -2088,6 +2088,13 @@ class ModelConfig : public ::google::protobuf::Message {
   inline double ptdw_reg_tau() const;
   inline void set_ptdw_reg_tau(double value);
 
+  // optional double ptdw_reg_treshold = 23 [default = 1];
+  inline bool has_ptdw_reg_treshold() const;
+  inline void clear_ptdw_reg_treshold();
+  static const int kPtdwRegTresholdFieldNumber = 23;
+  inline double ptdw_reg_treshold() const;
+  inline void set_ptdw_reg_treshold(double value);
+
   // @@protoc_insertion_point(class_scope:artm.ModelConfig)
  private:
   inline void set_has_name();
@@ -2120,6 +2127,8 @@ class ModelConfig : public ::google::protobuf::Message {
   inline void clear_has_ptdw_reg_window();
   inline void set_has_ptdw_reg_tau();
   inline void clear_has_ptdw_reg_tau();
+  inline void set_has_ptdw_reg_treshold();
+  inline void clear_has_ptdw_reg_treshold();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2148,9 +2157,10 @@ class ModelConfig : public ::google::protobuf::Message {
   ::google::protobuf::int32 ptdw_reg_mode_;
   ::google::protobuf::int32 ptdw_reg_window_;
   double ptdw_reg_tau_;
+  double ptdw_reg_treshold_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(22 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(23 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -8688,6 +8698,13 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline double ptdw_reg_tau() const;
   inline void set_ptdw_reg_tau(double value);
 
+  // optional double ptdw_reg_treshold = 20 [default = 1];
+  inline bool has_ptdw_reg_treshold() const;
+  inline void clear_ptdw_reg_treshold();
+  static const int kPtdwRegTresholdFieldNumber = 20;
+  inline double ptdw_reg_treshold() const;
+  inline void set_ptdw_reg_treshold(double value);
+
   // @@protoc_insertion_point(class_scope:artm.ProcessBatchesArgs)
  private:
   inline void set_has_nwt_target_name();
@@ -8716,6 +8733,8 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   inline void clear_has_ptdw_reg_window();
   inline void set_has_ptdw_reg_tau();
   inline void clear_has_ptdw_reg_tau();
+  inline void set_has_ptdw_reg_treshold();
+  inline void clear_has_ptdw_reg_treshold();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -8739,9 +8758,10 @@ class ProcessBatchesArgs : public ::google::protobuf::Message {
   ::google::protobuf::int32 ptdw_reg_mode_;
   ::google::protobuf::int32 ptdw_reg_window_;
   double ptdw_reg_tau_;
+  double ptdw_reg_treshold_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(19 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(20 + 31) / 32];
 
   friend void  protobuf_AddDesc_artm_2fmessages_2eproto();
   friend void protobuf_AssignDesc_artm_2fmessages_2eproto();
@@ -12664,6 +12684,28 @@ inline double ModelConfig::ptdw_reg_tau() const {
 inline void ModelConfig::set_ptdw_reg_tau(double value) {
   set_has_ptdw_reg_tau();
   ptdw_reg_tau_ = value;
+}
+
+// optional double ptdw_reg_treshold = 23 [default = 1];
+inline bool ModelConfig::has_ptdw_reg_treshold() const {
+  return (_has_bits_[0] & 0x00400000u) != 0;
+}
+inline void ModelConfig::set_has_ptdw_reg_treshold() {
+  _has_bits_[0] |= 0x00400000u;
+}
+inline void ModelConfig::clear_has_ptdw_reg_treshold() {
+  _has_bits_[0] &= ~0x00400000u;
+}
+inline void ModelConfig::clear_ptdw_reg_treshold() {
+  ptdw_reg_treshold_ = 1;
+  clear_has_ptdw_reg_treshold();
+}
+inline double ModelConfig::ptdw_reg_treshold() const {
+  return ptdw_reg_treshold_;
+}
+inline void ModelConfig::set_ptdw_reg_treshold(double value) {
+  set_has_ptdw_reg_treshold();
+  ptdw_reg_treshold_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -21331,6 +21373,28 @@ inline double ProcessBatchesArgs::ptdw_reg_tau() const {
 inline void ProcessBatchesArgs::set_ptdw_reg_tau(double value) {
   set_has_ptdw_reg_tau();
   ptdw_reg_tau_ = value;
+}
+
+// optional double ptdw_reg_treshold = 20 [default = 1];
+inline bool ProcessBatchesArgs::has_ptdw_reg_treshold() const {
+  return (_has_bits_[0] & 0x00080000u) != 0;
+}
+inline void ProcessBatchesArgs::set_has_ptdw_reg_treshold() {
+  _has_bits_[0] |= 0x00080000u;
+}
+inline void ProcessBatchesArgs::clear_has_ptdw_reg_treshold() {
+  _has_bits_[0] &= ~0x00080000u;
+}
+inline void ProcessBatchesArgs::clear_ptdw_reg_treshold() {
+  ptdw_reg_treshold_ = 1;
+  clear_has_ptdw_reg_treshold();
+}
+inline double ProcessBatchesArgs::ptdw_reg_treshold() const {
+  return ptdw_reg_treshold_;
+}
+inline void ProcessBatchesArgs::set_ptdw_reg_treshold(double value) {
+  set_has_ptdw_reg_treshold();
+  ptdw_reg_treshold_ = value;
 }
 
 // -------------------------------------------------------------------
