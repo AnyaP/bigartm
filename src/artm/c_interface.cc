@@ -84,7 +84,7 @@ static void EnableLogging() {
     FLAGS_log_dir = ".";
     FLAGS_logbufsecs = 0;
     try {
-      ::google::InitGoogleLogging(".");
+      ::google::InitGoogleLogging("log");
       ::google::SetStderrLogging(google::GLOG_WARNING);
       logging_enabled = true;
     }
