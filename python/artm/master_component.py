@@ -111,7 +111,7 @@ class MasterComponent(object):
     def process_batches(self, pwt, nwt, num_inner_iterations=None, batches_folder=None,
                         batches=None, regularizer_name=None, regularizer_tau=None,
                         class_ids=None, class_weights=None, find_theta=False,
-                        reset_scores=False, reuse_theta=False, find_ptdw=False
+                        reset_scores=False, reuse_theta=False, find_ptdw=False,
                         use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_window=None,
                         ptdw_reg_tau=None, ptdw_reg_treshold=None):
         """Args:
