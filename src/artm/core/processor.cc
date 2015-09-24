@@ -507,8 +507,8 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
     if (!item_has_tokens) continue;  // continue to the next item
 
-    for (int inner_iter = 0; inner_iter <= model_config.inner_iterations_count(); ++inner_iter) {
-      const bool last_iteration = (inner_iter == model_config.inner_iterations_count());
+    for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
+      const bool last_iteration = (inner_iter == model_config.inner_iterations_count() - 1);
       for (int i = begin_index; i < end_index; ++i) {
         const float* phi_ptr = &local_phi(i - begin_index, 0);
         float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
@@ -534,7 +534,8 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
         // 1. evaluate wich tokens are background
         double treshold = model_config.ptdw_reg_treshold();
-        std::vector<bool> is_background(local_token_size);
+        std::vector<bool> is_background(local_token_size, false);
+        int count_background = 0;
         for (int i = 0; i < local_token_size; ++i) {
           const float* local_ptdw_ptr = &local_ptdw(i, 0);
           double sum_background = 0;
@@ -546,8 +547,10 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
           }
           if (sum_background > treshold) {
             is_background[i] = true;
+            ++count_background;
           }
         }
+        LOG(WARNING) << 1.0 * count_background / local_token_size;
 
         // 2. prepare ptdw copy and smoothing profile
         int h = model_config.ptdw_reg_window() / 2;
@@ -581,26 +584,36 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
       // Multiplying neighbours (mode = 2)
       if (model_config.ptdw_reg_mode() == 2) {
-
+        double tau = model_config.ptdw_reg_tau();
+        DenseMatrix<float> copy_ptdw(local_ptdw);
+        for (int i = 0; i < local_token_size; ++i) {
+          const float* copy_ptdw_ptr = &copy_ptdw(i, 0);
+          float* local_ptdw_ptr = &local_ptdw(i, 0);
+          for (int k = 0; k < topics_count; ++k) {
+            if (i + 1 < local_token_size)
+              local_ptdw_ptr[k] *= copy_ptdw(i + 1, k);
+            if (i - 1 >= 0)
+              local_ptdw_ptr[k] *= copy_ptdw(i - 1, k);
+          }
+        }
       }
 
       // I would update each iteration, also the last one, why loose information?
       // Onine LDA makes the same + we will have fully correct offline PLSA then.
-      if (!last_iteration) {  // update theta matrix (except for the last iteration)
+      // if (!last_iteration) {  // update theta matrix (except for the last iteration)
+      for (int k = 0; k < topics_count; ++k)
+        ntd_ptr[k] = 0.0f;
+      for (int i = begin_index; i < end_index; ++i) {
+        const float n_dw = sparse_ndw.val()[i];
+        const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
         for (int k = 0; k < topics_count; ++k)
-          ntd_ptr[k] = 0.0f;
-        for (int i = begin_index; i < end_index; ++i) {
-          const float n_dw = sparse_ndw.val()[i];
-          const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
-          for (int k = 0; k < topics_count; ++k)
-            ntd_ptr[k] += n_dw * ptdw_ptr[k]; // n_td are not needed any more?
-        }
+          ntd_ptr[k] += n_dw * ptdw_ptr[k]; // n_td are not needed any more?
+      }
+      for (int k = 0; k < topics_count; ++k)
+        theta_ptr[k] = ntd_ptr[k];
+      agents->Apply(d, inner_iter, topics_count, theta_ptr);
 
-        for (int k = 0; k < topics_count; ++k)
-          theta_ptr[k] = ntd_ptr[k];
-
-        agents->Apply(d, inner_iter, topics_count, theta_ptr);
-      } else {  // update n_wt matrix (on the last iteration)
+      if (last_iteration) {  // update n_wt matrix (on the last iteration)
         const bool in_mask = (mask == nullptr || mask->value(d));
         if (nwt_writer != nullptr && in_mask) {
           std::vector<float> values(topics_count, 0.0f);
