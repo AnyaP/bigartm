@@ -182,7 +182,7 @@ class MasterComponent(object):
 
         result = messages.ProcessBatchesResult()
         result.ParseFromString(retval)
-
+        
         if not find_theta and not find_ptdw:
             return result.theta_matrix
 

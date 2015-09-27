@@ -247,7 +247,7 @@ class ARTM(object):
     def fit_offline(self, batch_vectorizer=None, num_collection_passes=20,
                     num_document_passes=1, reuse_theta=True,
                     use_ptdw_matrix=False, ptdw_reg_mode=0, ptdw_reg_window=None,
-                    ptdw_reg_tau=None, ptdw_reg_treshold=None):
+                    ptdw_reg_tau=None, ptdw_reg_treshold=None, find_ptdw=False):
         """ARTM.fit_offline() --- proceed the learning of
         topic model in off-line mode
 
@@ -315,6 +315,7 @@ class ARTM(object):
                                          rwt=self.model_rwt,
                                          regularizer_name=phi_reg_name,
                                          regularizer_tau=phi_reg_tau)
+
             self.master.normalize_model(nwt=self.model_nwt, pwt=self.model_pwt, rwt=self.model_rwt)
 
             for name in self.scores.data.keys():
@@ -326,6 +327,37 @@ class ARTM(object):
                         self.score_tracker[name].add()
 
                 self.score_tracker[name].add(self.scores[name])
+
+        if find_ptdw:
+            [message, array] = self.master.process_batches(pwt=self.model_pwt,
+                                            batches=batches_list,
+                                            nwt=self.model_nwt,
+                                            regularizer_name=[],
+                                            regularizer_tau=[],
+                                            num_inner_iterations=num_document_passes,
+                                            class_ids=class_ids,
+                                            class_weights=class_weights,
+                                            reset_scores=True,
+                                            reuse_theta=reuse_theta,
+                                            use_ptdw_matrix=use_ptdw_matrix,
+                                            ptdw_reg_mode=ptdw_reg_mode,
+                                            ptdw_reg_window=ptdw_reg_window,
+                                            ptdw_reg_tau=ptdw_reg_tau,
+                                            ptdw_reg_treshold=ptdw_reg_treshold,
+                                            find_ptdw=True)
+            document_ids = [item_id for item_id in message.item_id]
+            topic_names = [topic_name for topic_name in message.topic_name]
+        
+            markup = {}
+            doc_id = -1
+            for i in xrange(len(document_ids)):
+                if document_ids[i] != doc_id:
+                    doc_id = document_ids[i]
+                    markup[doc_id] = []
+                topic = array[i].argmax()
+                markup[doc_id].append(topic)
+            return markup, topic_names
+
 
     def fit_online(self, batch_vectorizer=None, tau0=1024.0, kappa=0.7,
                    update_every=1, num_document_passes=10, reset_theta_scores=False):

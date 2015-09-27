@@ -617,7 +617,7 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
             ++count_background;
           }
         }
-        LOG(WARNING) << 1.0 * count_background / local_token_size;
+        // LOG(WARNING) << 1.0 * count_background / local_token_size;
 
         // 2. prepare ptdw copy and smoothing profile
         int h = model_config.ptdw_reg_window() / 2;
