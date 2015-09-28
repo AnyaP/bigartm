@@ -574,8 +574,8 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
     if (!item_has_tokens) continue;  // continue to the next item
 
-    for (int inner_iter = 0; inner_iter < model_config.inner_iterations_count(); ++inner_iter) {
-      const bool last_iteration = (inner_iter == model_config.inner_iterations_count() - 1);
+    for (int inner_iter = 0; inner_iter <= model_config.inner_iterations_count(); ++inner_iter) {
+      const bool last_iteration = (inner_iter == model_config.inner_iterations_count());
       for (int i = begin_index; i < end_index; ++i) {
         const float* phi_ptr = &local_phi(i - begin_index, 0);
         float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
@@ -667,20 +667,19 @@ InferPtdwAndUpdateNwtSparse(const ModelConfig& model_config, const Batch& batch,
 
       // I would update each iteration, also the last one, why loose information?
       // Onine LDA makes the same + we will have fully correct offline PLSA then.
-      // if (!last_iteration) {  // update theta matrix (except for the last iteration)
-      for (int k = 0; k < topics_count; ++k)
-        ntd_ptr[k] = 0.0f;
-      for (int i = begin_index; i < end_index; ++i) {
-        const float n_dw = sparse_ndw.val()[i];
-        const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+      if (!last_iteration) {  // update theta matrix (except for the last iteration)
         for (int k = 0; k < topics_count; ++k)
-          ntd_ptr[k] += n_dw * ptdw_ptr[k]; // n_td are not needed any more?
-      }
-      for (int k = 0; k < topics_count; ++k)
-        theta_ptr[k] = ntd_ptr[k];
-      agents->Apply(d, inner_iter, topics_count, theta_ptr);
-
-      if (last_iteration) {  // update n_wt matrix (on the last iteration)
+          ntd_ptr[k] = 0.0f;
+        for (int i = begin_index; i < end_index; ++i) {
+          const float n_dw = sparse_ndw.val()[i];
+          const float* ptdw_ptr = &local_ptdw(i - begin_index, 0);
+          for (int k = 0; k < topics_count; ++k)
+            ntd_ptr[k] += n_dw * ptdw_ptr[k]; // n_td are not needed any more?
+        }
+        for (int k = 0; k < topics_count; ++k)
+          theta_ptr[k] = ntd_ptr[k];
+        agents->Apply(d, inner_iter, topics_count, theta_ptr);
+      } else { // if (last_iteration)  // update n_wt matrix (on the last iteration)
         const bool in_mask = (mask == nullptr || mask->value(d));
         if (nwt_writer != nullptr && in_mask) {
           std::vector<float> values(topics_count, 0.0f);
